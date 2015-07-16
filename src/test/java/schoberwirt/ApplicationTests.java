@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sample.simple;
+package schoberwirt;
 
 import org.junit.After;
 import org.junit.Before;

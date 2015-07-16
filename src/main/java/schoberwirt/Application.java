@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sample.simple;
+package schoberwirt;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.InboundChannelAdapter;
-import org.springframework.integration.feed.config.FeedInboundChannelAdapterParser;
 import org.springframework.integration.feed.inbound.FeedEntryMessageSource;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.PollableChannel;
-import sample.simple.service.HelloWorldService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
