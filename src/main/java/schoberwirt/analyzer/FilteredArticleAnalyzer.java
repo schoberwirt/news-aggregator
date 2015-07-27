@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.toList;
  */
 @Getter
 @Setter
-public class FilteredArticleAnalyzer implements Analyzer {
+public class FilteredArticleAnalyzer implements ArticleAnalyzer {
 
     private final List<String> filters;
 

@@ -15,26 +15,22 @@ import java.util.List;
  * @since 19.07.15
  */
 @Configuration
-public class ZeitOnlineArticleParserConfiguration {
+public class SpiegelOnlineArticleParserConfiguration {
 
     @Bean
-    public FeedEntryMessageSource zeitOnlineFeedEntryMessageSource() throws MalformedURLException {
-        URL feedUrl = new URL("http://newsfeed.zeit.de/index");
+    public FeedEntryMessageSource spiegelOnlineFeedEntryMessageSource() throws MalformedURLException {
+        URL feedUrl = new URL("http://www.spiegel.de/schlagzeilen/index.rss");
         return new FeedEntryMessageSource(feedUrl, "");
     }
 
     @Bean
-    public ArticleParser zeitOnlineArticleParser() throws MalformedURLException {
+    public ArticleParser spiegelOnlineArticleParser() throws MalformedURLException {
 
         List<String> filters = Lists.newArrayList();
-        filters.add("zeit.de");
         filters.add("doubleclick");
-        filters.add("?commentstart=");
-        filters.add("?commentstart=");
-        filters.add("#comments");
 
 
-        final ArticleParser articleParser = new ArticleParser("http://newsfeed.zeit.de/index", ".article a", zeitOnlineFeedEntryMessageSource());
+        final ArticleParser articleParser = new ArticleParser("http://www.spiegel.de/schlagzeilen/index.rss", ".article-section", spiegelOnlineFeedEntryMessageSource());
         articleParser.setAnalyzer(new FilteredArticleAnalyzer(filters));
         return articleParser;
     }

@@ -1,5 +1,7 @@
 package schoberwirt.parser;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -7,8 +9,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.integration.feed.inbound.FeedEntryMessageSource;
 import org.springframework.messaging.Message;
+import schoberwirt.analyzer.ArticleAnalyzer;
+import schoberwirt.analyzer.FilteredArticleAnalyzer;
 import schoberwirt.domain.Article;
 
 import java.io.IOException;
@@ -32,6 +37,7 @@ public abstract class AbstractArticleParser {
     private final URL feed;
 
     private final String articleCssSelector;
+    private ArticleAnalyzer analyzer;
 
 
     protected AbstractArticleParser(String feedUrl, String articleCssSelector, FeedEntryMessageSource feedEntryMessageSource) throws MalformedURLException {
@@ -40,7 +46,9 @@ public abstract class AbstractArticleParser {
         this.feedEntryMessageSourceBeanReference = feedEntryMessageSource;
     }
 
-    public List<Article> findArticles() throws URISyntaxException {
+    public List<Article> findArticles()  {
+
+        System.out.println("Starting to read: " + feed);
 
         List<Article> articles = Lists.newArrayList();
 
@@ -49,13 +57,16 @@ public abstract class AbstractArticleParser {
             Message<SyndEntry> message = feedEntryMessageSourceBeanReference.receive();
             if (message != null) {
                 SyndEntry entry = message.getPayload();
-                // display
-                //System.out.println(entry.getPublishedDate() + " - " + entry.getLink());
-                Article article = new Article();
-                article.setAddress(new URI(entry.getLink()));
-                article.setLinks(parse(entry.getLink()));
+                try {
+                    Article article = new Article();
+                    article.setAddress(new URI(entry.getLink()));
+                    article.setLinks(parse(entry.getLink()));
 
-                articles.add(article);
+                    articles.add(article);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
 
@@ -68,10 +79,14 @@ public abstract class AbstractArticleParser {
         Document document = null;
         try {
             document = Jsoup.connect(articleLink).get();
-            document.select(articleCssSelector).forEach(element -> {
+            System.out.print("Analyzing:"+articleLink);
+            final Elements elements = document.select(articleCssSelector);
+            System.out.print(", Found "+elements.size() + " links \n");
+            elements.forEach(element -> {
                 final URI link;
                 try {
-                    link = new URI(element.attr("href"));
+                    System.out.println("             " + element.attr("href"));
+                            link = new URI(element.attr("href"));
                     result.add(link);
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
@@ -84,4 +99,21 @@ public abstract class AbstractArticleParser {
         return result;
     };
 
+    public void setAnalyzer(ArticleAnalyzer analyzer) {
+        this.analyzer = analyzer;
+    }
+
+    public ListMultimap<String, String> analyze(List<Article> articlesWithLinks) {
+        ListMultimap<String, String> domainCount = ArrayListMultimap.create();
+
+
+        analyzer.analyze(articlesWithLinks).forEach(article -> {
+            article.getLinks().forEach(uri -> {
+
+                domainCount.put(uri.getHost(), uri.toString());
+            });
+        });
+
+        return domainCount;
+    }
 }

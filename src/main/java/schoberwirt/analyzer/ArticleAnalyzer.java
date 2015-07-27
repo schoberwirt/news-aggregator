@@ -10,7 +10,7 @@ import java.util.List;
  * @author phofmann
  * @since 19.07.15
  */
-public interface Analyzer {
+public interface ArticleAnalyzer {
 
     List<Article> analyze(List<Article> urls);
 
